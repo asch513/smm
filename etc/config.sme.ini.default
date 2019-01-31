@@ -1,0 +1,257 @@
+[main]
+enable_yara = True
+max_level_walk = 30
+
+[yara]
+repo_directory = /data/smm_rules
+;hit_directory = /data/hits
+
+[smm]
+; deamon mode configs
+save_state_location = /data/smm/persist/workers
+persist_format = json
+output_dir = /data/smm/smm_event_logs
+
+; max settings (how much to combine until it is too much from a resource and output perspective)
+max_filemod = 1000
+max_netconn = 1000
+max_modload = 1000
+max_remotethread = 1000
+max_rawaccess = 1000
+max_regmod = 1000
+max_procaccess = 1000
+; when getting the entire tree of a process, set a limit to the number of levels to walk
+
+; standard beats metadata that smm requires for organizing data
+host = computer_name
+event_data = event_data
+id = event_id
+
+; these are the standard sysmon field names
+; in case sysmon changes its field names, or if sysmonmore is to be used by additional formats that contain process event information
+; for sme, this should map standard sysmon fields to the field names within elasticsearch
+EventID = event_id
+Computer = hostname
+ProcessId = process_id
+Image = image
+ProcessGuid = process_guid
+CommandLine = command_line
+CurrentDirectory = current_directory
+User = user_name
+UtcTime = @timestamp
+ParentProcessId = parent_id
+ParentProcessGuid = parent_guid
+ParentImage = parent_image
+ParentCommandLine = parent_command_line
+; if you break out hashes into md5, sha256 etc - then you will need to set a default for Hashes (pick one)
+; if hashes is md5=blah,sha256=blah format, then just use that field as the value here
+Hashes = sha256
+TargetFilename = target_filename
+SourceIp = src_ip
+DestinationIp = dst_ip
+DestinationHostname = destination_hostname
+ImageLoaded = image_loaded
+TargetProcessGuid = target_process_guid
+SourceProcessGuid = source_process_guid
+Device = device
+TargetImage = target_image
+SourceImage = source_image
+SourceProcessId = source_process_id
+SourceProcessGUID = source_process_guid
+TargetProcessId = target_process_id
+TargetProcessGUID = target_process_guid
+TargetObject = target_object
+NewName = new_name
+
+[elk]
+uri = https://user:pass@elasticsearch.domain/
+index = logs
+; optional additional identifier within elastic (we currently create a field for each log type and name it index, so index:sysmon willl be added to each search to increase performance. If not provided, it just will run searches without this
+log_source_identifier = index
+log_source_identifier_value = sysmon
+event_time_field = @timestamp
+; this is the standard elasticsearch time format
+event_time_format = %Y-%m-%dT%H:%M:%S.%fZ
+
+[sysmon]
+; event id field is important, depending on how your data is indexed, the event_id field may be named something else
+; Sysmon EventID standard name = event id field name in elasticsearch
+EventID = event_id
+
+; define which items to print as a standard process segment when the event has the field
+; segments will be printed following the sequencial order of the items specified
+[process_segment]
+ProcessGuid = process_guid
+ProcessId = process_id
+Image = image
+Command_Line = command_line
+MD5 = md5
+SHA256 = sha256
+Hash = hash
+ParentImage = parent_image
+ParentProcessGuid = parent_guid
+ParentProcessId = parent_process_id
+ParentCommandLine = parent_command_line
+TargetFilename = target_filename
+TargetFileName = target_file_name
+SourceProcessGuid = source_process_guid
+SourceProcessGUID = source_process_guid
+SourceProcessId = process_id
+SourceImage = source_image
+TargetProcessGuid = target_process_guid
+TargetProcess_Id = target_process_id
+TargetImage = target_image
+CallTrace = call_trace
+Device = device
+Protocol = protocol
+SourceIp = src_ip
+SourcePort = src_port
+DestinationIp = dst_port
+DestinationPort = dst_port
+DestinationHostname = dst_hostname
+PipeName = pipe_name
+Name = name
+Query = query
+EventNamespace = event_namespace
+Consumer = consumer
+Filter = filter
+Destination = destination
+Computer = hostname
+User = user_name
+UtcTime = @timestamp
+EventID = event_id
+
+; because of the way data is indexed and filtered, the field names in elasticsearch may not be the same as the SysMon field names, allow for conversion of important data items
+; these fields define segments of important data that will be printed during program usage
+;1) Process Creation
+[event_id_1]
+; SysMon Standard Field Name = elasticsearch field name
+; Standard winfilebeat syntax has items like 'event_data.ProcessGUID' as an example.
+; If following the standard winfilebeat format, then 'ProcessGUID = event_data.ProcessGUID' would be used for the following configurations
+;"2018-12-19T16:00:03.980-05:00"
+ProcessGuid = process_guid
+ProcessId = process_id
+Image = process_path
+MD5 = md5
+Hashes = Hashes
+CommandLine = command_line
+ParentImage = parent_image
+ParentProcessGuid = parent_guid
+ParentProcessId = parent_process_id
+ParentCommandLine = parent_command_line
+Computer = hostname
+User = user_name
+UtcTime = @timestamp
+
+;2) A process changed a file creation time
+[event_id_2]
+UtcTime = @timestamp
+TargetFilename = target_filename
+User = user_name
+
+;3) Network Connection
+[event_id_3]
+UtcTime = @timestamp
+SourceIp = src_ip
+SourcePort = src_port
+DestinationIp = dst_ip
+DestinationPort = dst_port
+DestinationHostname = dst_hostname
+Protocol = protocol
+User = user_name
+
+;4) sysmon restart
+;5) Process Terminated
+;6) Driver Loaded
+[event_id_6]
+UtcTime = @timestamp
+ImageLoaded = image_loaded
+MD5 = md5
+Signed = signed
+Signature = signature
+SignatureStatus = signature_status
+User = user_name
+
+;7) Image Loaded
+[event_id_7]
+UtcTime = @timestamp
+ImageLoaded = image_loaded
+MD5 = md5
+Signed = signed
+Signature = signature
+SignatureStatus = signature_status
+User = user_name
+
+;8) CreateRemoteThread
+[event_id_8]
+UtcTime = @timestamp
+SourceProcessGuid = source_process_guid
+SourceProcessId = source_process_id
+SourceImage = source_image
+TargetProcessGuid = target_process_guid
+TargetProcess_Id = target_process_id
+TargetImage = target_image
+User = user_name
+
+;9) RawAccessRead
+[event_id_9]
+UtcTime = @timestamp
+Device = device
+User = user_name
+
+;10) ProcessAccess
+[event_id_10]
+UtcTime = @timestamp
+SourceProcessGUID = source_process_guid
+SourceProcessId = source_process_id
+SourceImage = source_image
+TargetProcessGUID = target_process_guid
+TargetProcess_Id = target_process_id
+TargetImage = target_image
+CallTrace = call_trace
+
+;11) FileCreate
+[event_id_11]
+UtcTime = @timestamp
+TargetFilename = target_filename
+
+;12) RegistryEvent (Object create and delete)
+;13) RegistryEvent (Value Set)
+;14) RegistryEvent (Key and Value Rename)
+; Regmods
+[event_id_12]
+UtcTime = @timestamp
+TargetObject = target_object
+
+;15) FileCreateStreamHash
+[event_id_15]
+CreationUtcTime = @timestamp
+TargetFileName = target_file_name
+Hash = hash
+
+;16) Sysmon config state chanagd
+;17) Pipe Created
+;18) Pipe Connected
+[event_id_17]
+UtcTime = @timestamp
+PipeName = pipe_name
+
+;19) WmiEventFilter activity detected
+[event_id_19]
+UtcTime = @timestamp
+Name = name
+Query = query
+EventNamespace = event_namespace
+
+;20) WmiEventConsumer activity detected
+[event_id_20]
+UtcTime = @timestamp
+Name = name
+Destination = destination
+
+;21) WmiEventConsumerToFilter activity detected
+[event_id_21]
+UtcTime = @timestamp
+Consumer = consumer
+Filter = filter
+Destination = destination
