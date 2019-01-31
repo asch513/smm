@@ -405,18 +405,14 @@ class SysMonMore():
                 print(self.hosts[host][guid]['data'])
                 children.append(self.hosts[host][guid]['data'])
         if len(children) > 0:
-            print("has children...")
             new_guid_list = []
             new_level = []
             for item in children:
-                print(item)
                 if 'children' in item.keys():
                     new_guid_list.append(item['children'])
-            print("calling crawler...")
             tmpchildren = self.crawler(new_guid_list,host,depth)
             if tmpchildren:
                 children.append(tmpchildren)
-        print("returning children")
         if children:
             return children
 
@@ -890,7 +886,6 @@ class SysMonMore():
     def dump_to_file(self,path):
         f = open(path,"a")
         #json.dump(self.hosts,f)
-        print("dumping")
         for host in self.hosts:
             print("host:{}".format(host))
             for proc in self.hosts[host].keys():
