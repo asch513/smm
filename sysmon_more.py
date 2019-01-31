@@ -498,7 +498,7 @@ class SysMonMore():
             if ed[self.config['smm']['DestinationIp']] not in self.hosts[host][guid]['data']['netconn']:
                 self.hosts[host][guid]['data']['netconn_count'] += 1
                 self.hosts[host][guid]['data']['netconn'].append(ed[self.config['smm']['DestinationIp']])
-                pprint(self.hosts[host][guid])
+                # pprint(self.hosts[host][guid])
             # add destination hostname if available, and only unique hostnames
             if self.config['smm']['DestinationHostname'] in ed.keys():
                 if ed[self.config['smm']['DestinationHostname']] not in self.hosts[host][guid]['data']['netconn']:
