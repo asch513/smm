@@ -500,7 +500,6 @@ class SysMonMore():
         if int(self.config['smm']['max_netconn']) > self.hosts[host][guid]['data']['netconn_count']:
             # only add unique netconn values
             if ed[self.config['smm']['DestinationIp']] not in self.hosts[host][guid]['data']['netconn']:
-                print("adding netconn!!!!!!!! {} {}".format(ed[self.config['smm']['DestinationIp']],guid))
                 self.hosts[host][guid]['data']['netconn_count'] += 1
                 self.hosts[host][guid]['data']['netconn'].append(ed[self.config['smm']['DestinationIp']])
                 pprint(self.hosts[host][guid])
