@@ -79,6 +79,7 @@ class SysMonMore():
                 f.write('\n')
                 f.write(lines)
                 f.close()
+                logging.info("Rules: {} Matched Contents {}".format(rulenames,output_filepath))
             else:
                 print(rulenames)
                 print(strings)
