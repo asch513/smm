@@ -36,7 +36,7 @@ LOGGER.addHandler(handler)
 
 # Configuration file
 HOME_DIR = os.path.dirname(os.path.realpath(__file__))
-CONFIG_PATH = os.path.join(HOME_DIR, 'etc', 'config.ini')
+CONFIG_PATH = os.path.join(HOME_DIR, 'etc', 'sme.ini')
 
 
 def clean_exit(signal, frame):
@@ -55,7 +55,7 @@ class SysMonElasticsearch(object):
         self.config = CaseConfigParser()
         # load configuration
         try:
-            self.config.read('etc/config.ini')
+            self.config.read('etc/sme.ini')
         except Exception as e:
             logging.fatal("unable to load configuration from {0}: {1}".format(
                 'etc/config.ini', str(e)))
@@ -163,7 +163,7 @@ class SysMonElasticsearch(object):
         spaces = "     "
         print()
         print("{}-------------------------".format(spaces))
-        for conf,val in self.config.items('process_segment'):
+        for conf,val in self.config.items('sme'):
             #print("{}:{}".format(conf,val))
             if val in event.keys():
                 print("{}{}: {}".format(spaces,val,event[val]))
@@ -234,7 +234,7 @@ class SysMonElasticsearch(object):
 
     # query elasticsearch, pull ancestry info for all types of events
     def get_es_data(self,guid):
-        smm = SysMonMore()
+        smm = SysMonMore(config=self.config)
         # find all events for this process guid
         search = self.findAllProcesses(self.sanitize_guid(guid))
         logging.debug("executing search {}".format(search))
