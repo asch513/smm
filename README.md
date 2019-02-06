@@ -10,7 +10,7 @@ cd /opt
 git clone https://github.com/asch513/smm.git
 
 cd smm
-python3 sysmon_more -f test_data/sandbox_data
+python3 sysmon_more.py -f test_data/sandbox_data
 ```
 ```
 [2019-01-31 15:15:59,240] [sysmon_more.py:813] [MainThread] [INFO] - ################### Stats ######################
