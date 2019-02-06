@@ -29,7 +29,7 @@ class SysMonMore():
         # load configuration
         if not config:
             self.config = CaseConfigParser()
-            self.config.read('etc/config.ini')
+            self.config.read('etc/smm.ini')
             self.output_dir = self.config['smm']['output_dir']
         else:
             self.config = config
