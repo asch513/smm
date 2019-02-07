@@ -4,11 +4,18 @@ Thus, to be able to match logic based on ancestry I've created sysmon_more, beca
 
 The below shows examples of how to use it and some of the capabilities.
 
-note: the default configs in etc/config.ini reference this install directory
+- default install location is /opt
 ```
 cd /opt
 git clone https://github.com/asch513/smm.git
-
+```
+- copy default configs to config file location
+```
+cp /opt/smm/etc/smm.ini.default /opt/smm/etc/smm.ini
+cp /opt/sme/etc/sme.ini.default /opt/smm/etc/sme.ini
+```
+- test it
+```
 cd smm
 python3 sysmon_more.py -f test_data/sandbox_data
 ```
@@ -35,7 +42,7 @@ python3 sysmon_more.py -f test_data/sandbox_data
 [2019-01-31 15:15:59,365] [sysmon_more.py:797] [MainThread] [INFO] - Removed 6579 items from memory for vxstream-pc-d1. Max Items Setting: 1. New Number of total items 3
 ```
 
-run yara as well
+- run yara as well
 ```
 python3 sysmon_more.py -f test_data/sandbox_data -y
 ```
@@ -49,7 +56,7 @@ python3 sysmon_more.py -f test_data/sandbox_data -y
 [2019-01-31 15:23:18,327] [sysmon_more.py:82] [MainThread] [INFO] - Rules: ['winword_cmd'] Matched Contents /opt/smm/hits/vxstream-pc-d1_1548966198_0b23bf92-2596-11e9-8bf4-080027af8c45
 ```
 
-find process tree for yara match
+- find process tree for yara match in archive
 ```
 cat /opt/smm/hits/vxstream-pc-d1_1548966198_0b23bf92-2596-11e9-8bf4-080027af8c45
 ```
@@ -64,11 +71,11 @@ proc_id=3312
 proc_path=C:\Program Files\Microsoft Office\Office14\WINWORD.EXE
 ```
 
-format of content for yara to scan will include ancestry information from child to ggrand.
+- the format of the content for yara to scan will include ancestry information from child to ggrand.
 
-you can write yara rules on any level of the ancestry, including netconns, modloads, filemods, etc (see rules/winword_cmd.exe for template)
+- you can write yara rules on any level of the ancestry, including netconns, modloads, filemods, etc (see rules/winword_cmd.exe for template)
 
-archive - the default config enables writing an archive of ancestry trees, found in /opt/smm/archive. When running in daemon mode I do not suggest this (having this enabled just allows you to see some examples)
+- archive - the default config enables writing an archive of ancestry trees, found in /opt/smm/archive. When running in daemon mode I do not suggest having this on (having this enabled just allows you to see some examples)
 ```
 computer_name=vxstream-pc-d1
 grand_cmdline="C:\Program Files\AutoIt3\AutoIt3.exe" "C:\winclient.au3"
@@ -119,7 +126,7 @@ proc_time=2019-01-28 18:30:17.228
 proc_user=VXSTREAM-PC-D1\vxstream
 ```
 
-ancestry on a specific guid
+- ancestry on a specific guid
 ```
 python3 sysmon_more.py -f test_data/sandbox_data -g '{2D395339-4A39-5C4F-0000-00109D591C00}'
 ```
@@ -157,15 +164,16 @@ python3 sysmon_more.py -f test_data/sandbox_data -g '{2D395339-4A39-5C4F-0000-00
       - proc_time: 2019-01-28 16:55:41.088
 ```
 
-sme.py - SysMonElasticSearch - utility for querying ancestry information for specific processes (and running yara against them if you wish)
+#### SysMonElasticsearch
+sme.py - SysMonElasticsearch - utility for querying ancestry information for specific processes (and running yara against them if you wish)
 
-edit /opt/smm/etc/sme.ini with the url to your elasticsearch cluster
+- edit /opt/smm/etc/sme.ini with the url to your elasticsearch cluster
 ```
 [elk]
 uri = https://user:pass@elasticsearch.domain/
 ```
 
-depending on how you are getting sysmon logs into elasticsearch, your field names may be different than the sysmon field names, edit /opt/sme/etc/sme.ini to map sysmon fields to the fields that you have in elasticsearch. the [smm] and [sme] sections of the config need to be modified for the field names in your elasticsearch.
+- depending on how you are getting sysmon logs into elasticsearch, your field names may be different than the sysmon field names, edit /opt/sme/etc/sme.ini to map sysmon fields to the fields that you have in elasticsearch. the [smm] and [sme] sections of the config need to be modified for the field names in your elasticsearch.
 ```
 SysMon_Default_Name = Name_in_Elasticsearch
 ...
@@ -174,7 +182,7 @@ TargetProcessId = target_process_id
 TargetProcessGUID = target_process_guid
 ```
 
-search elasticsearch (lucene)
+- search elasticsearch (lucene)
 ```
 python3 sme.py query 'command_line:*Order*'
 ```
@@ -230,7 +238,7 @@ python3 sme.py query 'command_line:*Order*'
      event_id: 1
 ```
 
-take a look at the ancestry of an interesting guid
+- take a look at the ancestry of an interesting guid
 ```
 python3 sme.py proc '{1018D5A4-1842-5C5B-0000-001011D60A00}' -w
 ```
@@ -298,7 +306,7 @@ python3 sme.py proc '{1018D5A4-1842-5C5B-0000-001011D60A00}' -w
         ... 
         ... hopefully you get the idea
 ```
-run yara on that process
+- run yara on that process
 
 ```
 python3 sme.py proc '{1018D5A4-1842-5C5B-0000-001011D60A00}' -w -y
