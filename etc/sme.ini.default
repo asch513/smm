@@ -64,7 +64,7 @@ TargetObject = target_object
 NewName = new_name
 
 [elk]
-uri = https://user:pass@elasticsearch.domain/
+uri = https://baschliman:Hack3rsV1ll3@elasticsearch.valvoline/
 index = logs
 ; optional additional identifier within elastic (we currently create a field for each log type and name it index, so index:sysmon willl be added to each search to increase performance. If not provided, it just will run searches without this
 log_source_identifier = index
@@ -80,7 +80,7 @@ EventID = event_id
 
 ; define which items to print as a standard process segment when the event has the field
 ; segments will be printed following the sequencial order of the items specified
-[process_segment]
+[sme]
 ProcessGuid = process_guid
 ProcessId = process_id
 Image = image

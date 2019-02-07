@@ -214,7 +214,6 @@ class SysMonElasticsearch(object):
             return
         else:
             depth += 1
-        print("searching for child {}".format(guid))
         search = "{}:{}".format(self.config['event_id_1']['ParentProcessGuid'],self.sanitize_guid(guid))
         results = None
         if earliest and latest:
@@ -226,7 +225,6 @@ class SysMonElasticsearch(object):
         logging.debug("{} results.".format(total))
         # add the events to sysmon_more
         for event in hits:
-            print("adding child: {}".format(event['_source']))
             smm.add_event(event['_source']) 
         for event in hits:
             self.child_crawler(smm,event['_source'][self.config['event_id_1']['ProcessGuid']],depth,host,earliest=earliest,latest=latest)
@@ -246,7 +244,7 @@ class SysMonElasticsearch(object):
         host = None
         latest = earliest = None
         # add the events to sysmon_more
-        print(hits)
+        #print(hits)
         for event in hits:
             data = event['_source']
             if self.config['elk']['event_time_field'] in data.keys():
@@ -258,8 +256,6 @@ class SysMonElasticsearch(object):
                 host = data[self.config['event_id_1']['Computer']]
             if self.config['event_id_1']['ParentProcessGuid'] in data.keys():
                 parent_guid = data[self.config['event_id_1']['ParentProcessGuid']]
-                print("has parent: {}".format(parent_guid))
-            print("adding process data")
             smm.add_event(data)
 
         # find all children's children's etc processes of the guid
@@ -275,15 +271,11 @@ class SysMonElasticsearch(object):
             logging.debug("{} results.".format(total))
             parent_guid = None
             for event in hits:
-                print("adding parent data")
-                print(event['_source'])
                 smm.add_event(event['_source'])
 
                 # a process should have 1 unique parent guid
                 if self.config['event_id_1']['ParentProcessGuid'] in event['_source'].keys():
                     parent_guid = event['_source'][self.config['event_id_1']['ParentProcessGuid']]
-                    print("parent of parent is {}".format(parent_guid))
-
         return smm
 
         
@@ -384,7 +376,7 @@ def main():
     #                         help="Warn before printing large executions")
 
     subparsers = parser.add_subparsers(dest='command') #title='subcommands', help='additional help')
-    cbinterface_commands = [ 'query', 'proc']
+    interface_commands = [ 'query', 'proc']
 
 
     parser_proc = subparsers.add_parser('proc', help="analyze a process GUID. 'proc -h' for more")
@@ -450,7 +442,7 @@ def main():
     if args.command is None:
         print("\n\n*****")
         print("You must specify one of the following commands:\n")
-        print(cbinterface_commands)
+        print(interface_commands)
         print("\n*****\n\n")
         parser.parse_args(['-h'])
 
