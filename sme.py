@@ -303,7 +303,6 @@ class SysMonElasticsearch(object):
         results = self.perform_query(jsonsearch)
         hits = results.json()["hits"]["hits"]
         total = results.json()['hits']['total']
-        print(total)
         logging.debug("{} results.".format(total))
         process = {}
         for event in hits:
@@ -313,7 +312,6 @@ class SysMonElasticsearch(object):
             process[eventid].append(event['_source']) 
         
         for eventid in process.keys():
-            print(eventid)
             if eventid == 1:
                 print("  ==== PROCESS ====")
                 for item in process[eventid]:
@@ -326,6 +324,8 @@ class SysMonElasticsearch(object):
                 print("  ==== NETCONNS ====")
                 for item in process[eventid]:
                     self.print_config_section(item,'event_id_3')
+            if eventid == 5:
+                logging.debug("EventID 5, process termination, skipping {}".format(hits))
             if eventid == 6:
                 print("  ==== DRIVER LOADED ====")
                 for item in process[eventid]:
