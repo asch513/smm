@@ -1,5 +1,5 @@
 [main]
-save_state_location = /data/smm/persist
+save_state_location = /opt/smm/persist
 save_file_name = smm_main.save
 write_interval = 120
 stats_interval = 1800
@@ -11,25 +11,25 @@ max_level_walk = 30
 ; supports json or pickle
 persist_format = json
 enable_yara = True
-output_text_file_directory = /data/smm/archive
+output_text_file_directory = /opt/smm/archive
 
-src_location = cybersecurity@sysmon.local:/data/smm/distributor/sysmon.local
-event_file_directory = /data/smm/work
-tmp_rsync_dir = /data/smm/tmp
+src_location = cybersecurity@sysmon.local:/opt/smm/distributor/sysmon.local
+event_file_directory = /opt/smm/work
+tmp_rsync_dir = /opt/smm/tmp
 worker_count = 3
 worker_base_directory = /opt/smm
 worker_program = sysmon_more.py
 
 [distributor]
 input_dir = /data/logstash/smm
-output_dir = /data/smm/distributor
+output_dir = /opt/smm/distributor
 output_dir_names = sysmon.local
-map_file_path = /data/smm/persist/distributor/smm_distributor.save
+map_file_path = /opt/smm/persist/distributor/smm_distributor.save
 stats_interval = 1800
 
 [yara]
 repo_directory = /opt/smm/rules
-hit_directory = /data/smm/hits
+hit_directory = /opt/smm/hits
 
 [ace]
 enabled = no
@@ -41,9 +41,9 @@ company_id = 2
 
 [smm]
 ; deamon mode configs
-save_state_location = /data/smm/persist/workers
+save_state_location = /opt/smm/persist/workers
 persist_format = json
-output_dir = /data/smm/smm_event_logs
+output_dir = /opt/smm/smm_event_logs
 
 ; max settings (how much to combine until it is too much from a resource and output perspective)
 max_filemod = 1000

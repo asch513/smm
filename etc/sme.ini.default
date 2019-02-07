@@ -3,14 +3,14 @@ enable_yara = True
 max_level_walk = 30
 
 [yara]
-repo_directory = /data/smm_rules
-;hit_directory = /data/hits
+repo_directory = /opt/smm/rules
+;hit_directory = /opt/smm/hits
 
 [smm]
 ; deamon mode configs
-save_state_location = /data/smm/persist/workers
+save_state_location = /opt/smm/persist/workers
 persist_format = json
-output_dir = /data/smm/smm_event_logs
+output_dir = /opt/smm/smm_event_logs
 
 ; max settings (how much to combine until it is too much from a resource and output perspective)
 max_filemod = 1000
